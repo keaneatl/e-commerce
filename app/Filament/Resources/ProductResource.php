@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Filament\Resources\ProductResource\RelationManagers\CategoriesRelationManager;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -65,40 +66,42 @@ class ProductResource extends Resource
                             ->reorderable()
                     ])->columnSpan(2),
 
-                    Group::make()->schema([
-                        Section::make('Price')->schema([
-                            TextInput::make('price')
-                                ->numeric()
-                                ->required()
-                                ->prefix("PHP")
-                        ]),
-                        Section::make("Associations")->schema([
-                            Select::make("category_id")
-                                ->required()
-                                ->searchable()
-                                ->preload()
-                                ->relationship("category", "name"),
-                            Select::make("brand_id")
-                                ->required()
-                                ->searchable()
-                                ->preload()
-                                ->relationship("brand", "name")
-                        ]),
+                ])->columns(3),
 
-                        Section::make("Status")->schema([
-                            Toggle::make("in_stock")
-                                ->required()
-                                ->default(true),
-                            Toggle::make("is_active")
-                                ->required()
-                                ->default(true),
-                            Toggle::make("is_featured")
-                                ->required(),
-                            Toggle::make("on_sale")
-                                ->required()
-                        ])
-                    ])->columnSpan(1)
-                ])->columns(3)
+                Group::make()->schema([
+                    Section::make('Price')->schema([
+                        TextInput::make('price')
+                            ->numeric()
+                            ->required()
+                            ->prefix("PHP")
+                    ]),
+                    Section::make("Associations")->schema([
+                        Select::make("categories")
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->multiple()
+                            ->relationship("categories", "name"),
+                        Select::make("brand_id")
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->relationship("brand", "name")
+                    ]),
+
+                    Section::make("Status")->schema([
+                        Toggle::make("in_stock")
+                            ->required()
+                            ->default(true),
+                        Toggle::make("is_active")
+                            ->required()
+                            ->default(true),
+                        Toggle::make("is_featured")
+                            ->required(),
+                        Toggle::make("on_sale")
+                            ->required()
+                    ])
+                ])->columnSpan(1)
             ]);
     }
 
@@ -131,8 +134,10 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('category')
-                    ->relationship("category", "name")
+                SelectFilter::make('categories')
+                    ->multiple()
+                    ->preload()
+                    ->relationship("categories", "name")
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -151,7 +156,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 
