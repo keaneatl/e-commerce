@@ -7,11 +7,13 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +29,8 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->required(),
+                    ->required()
+                ,
                 Forms\Components\TextInput::make('email')
                     ->label("Email Addresss")
                     ->email()
@@ -41,6 +44,11 @@ class UserResource extends Resource
                     ->password()
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn($livewire): bool => $livewire instanceof CreateRecord),
+
+                Select::make('roles')
+                    ->multiple()
+                    ->preload()
+                    ->relationship("roles", "name")
             ]);
     }
 
@@ -49,6 +57,9 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make("name")
+                    ->searchable(),
+                BadgeColumn::make("roles.name")
+                    ->badge()
                     ->searchable(),
                 TextColumn::make("email")
                     ->searchable(),
